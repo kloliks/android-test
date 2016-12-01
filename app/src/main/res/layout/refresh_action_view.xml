@@ -7,6 +7,7 @@
     android:src="@android:drawable/stat_notify_sync_noanim"
     android:onClick="onRefresh"
     android:background="?android:attr/actionBarItemBackground"
+    android:id="@+id/refresh_view"
     >
     <!--android:clickable="true"-->
 
