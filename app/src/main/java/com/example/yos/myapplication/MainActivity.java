@@ -57,6 +57,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void onRefresh(View view) {
         DownloadTask downloadTask = new DownloadTask(this, view);
-        downloadTask.execute("http://bulk.openweathermap.org/sample/city.list.us.json.gz");
+        downloadTask.execute();
     }
 }
