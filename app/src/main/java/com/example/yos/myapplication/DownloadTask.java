@@ -31,20 +31,34 @@ public class DownloadTask extends AsyncTask<String, Void, Void> {
     protected Void doInBackground(String... sUrl) {
         InputStream input = null;
         OutputStream output = null;
-        HttpsURLConnection connection = null;
+        HttpURLConnection connection = null;
         try {
+            Log.e("sUrl", sUrl[0]);
             URL url = new URL(sUrl[0]);
-            connection = (HttpsURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             connection.connect();
 
-            if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 Log.e("Error: ", "code ("+ connection.getResponseCode()
                         +"); message ("+ connection.getResponseMessage() +")");
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
+                    String new_sUrl = connection.getHeaderField("Location");
+                    Log.e("new_sUrl", new_sUrl);
+
+                    connection.disconnect();
+
+                    url = new URL(new_sUrl);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
+                }
             }
 
             String output_file_name =
                     Environment.getExternalStorageDirectory().getPath()
                     + "/city.list.us.json.gz";
+
+            int fileLength = connection.getContentLength();
+            Log.e("BLA", "fileLength: "+ fileLength);
 
             input = connection.getInputStream();
             output = new FileOutputStream(output_file_name);
