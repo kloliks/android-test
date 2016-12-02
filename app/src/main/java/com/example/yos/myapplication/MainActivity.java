@@ -8,9 +8,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     @Override
@@ -59,13 +56,7 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     public void onRefresh(View view) {
-        Animation rotation = AnimationUtils.loadAnimation(this, R.anim.rotation);
-        rotation.setRepeatCount(Animation.INFINITE);
-
         DownloadTask downloadTask = new DownloadTask(this, view);
-        downloadTask.execute(
-                "https://slack-redir.net/link?url=http%3A%2F%2Fbulk.openweathermap.org%2Fsample%2Fcity.list.us.json.gz");
-
-        view.startAnimation(rotation);
+        downloadTask.execute("http://bulk.openweathermap.org/sample/city.list.us.json.gz");
     }
 }

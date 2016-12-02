@@ -5,7 +5,9 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.webkit.URLUtil;
 
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
@@ -14,9 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 
-import javax.net.ssl.HttpsURLConnection;
 
 public class DownloadTask extends AsyncTask<String, Void, Void> {
     private Context mContext;
@@ -33,34 +33,21 @@ public class DownloadTask extends AsyncTask<String, Void, Void> {
         OutputStream output = null;
         HttpURLConnection connection = null;
         try {
-            Log.e("sUrl", sUrl[0]);
             URL url = new URL(sUrl[0]);
             connection = (HttpURLConnection) url.openConnection();
             connection.connect();
 
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                Log.e("Error: ", "code ("+ connection.getResponseCode()
+                Log.e("Error", "code ("+ connection.getResponseCode()
                         +"); message ("+ connection.getResponseMessage() +")");
-                if (connection.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
-                    String new_sUrl = connection.getHeaderField("Location");
-                    Log.e("new_sUrl", new_sUrl);
-
-                    connection.disconnect();
-
-                    url = new URL(new_sUrl);
-                    connection = (HttpURLConnection) url.openConnection();
-                    connection.connect();
-                }
+                return null;
             }
 
             String output_file_name =
                     Environment.getExternalStorageDirectory().getPath()
-                    + "/city.list.us.json.gz";
+                    +"/"+ URLUtil.guessFileName(sUrl[0], null, null);
 
-            int fileLength = connection.getContentLength();
-            Log.e("BLA", "fileLength: "+ fileLength);
-
-            input = connection.getInputStream();
+            input = new BufferedInputStream(connection.getInputStream());
             output = new FileOutputStream(output_file_name);
 
             int count;
@@ -70,8 +57,7 @@ public class DownloadTask extends AsyncTask<String, Void, Void> {
             }
 
         } catch (Exception e) {
-            Log.e("Error: ", e.getMessage());
-//            Toast.makeText(mContext, "Error: "+ e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e("Error", e.getMessage());
         }
         try {
             if (output != null) {
@@ -90,7 +76,18 @@ public class DownloadTask extends AsyncTask<String, Void, Void> {
     }
 
     @Override
+    protected void onPreExecute() {
+        mView.setClickable(false);
+
+        Animation rotation = AnimationUtils.loadAnimation(mContext, R.anim.rotation);
+        rotation.setRepeatCount(Animation.INFINITE);
+
+        mView.startAnimation(rotation);
+    }
+
+    @Override
     protected void onPostExecute(Void result) {
         mView.clearAnimation();
+        mView.setClickable(true);
     }
 }
