@@ -8,10 +8,12 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.webkit.URLUtil;
+import android.widget.Toast;
 
 import org.xml.sax.InputSource;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,7 +26,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 
-public class DownloadTask extends AsyncTask<String, Void, Void> {
+public class DownloadTask extends AsyncTask<Void, Void, Void> {
     private Context mContext;
     private View mView;
 
@@ -34,9 +36,19 @@ public class DownloadTask extends AsyncTask<String, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(String... sUrl) {
+    protected Void doInBackground(Void... ignore) {
         try {
-            URL url = new URL("http://bulk.openweathermap.org/sample/city.list.us.json.gz");
+            String output_file_name =
+                    Environment.getExternalStorageDirectory().getPath()
+                            +"/"+ mContext.getResources().getString(R.string.city_file_name);
+
+            File json = new File(output_file_name);
+            if (json.exists()) {
+                long lastTime = json.lastModified();
+                Toast.makeText(mContext, "last time: "+lastTime, Toast.LENGTH_SHORT).show();
+            }
+
+            URL url = new URL(mContext.getResources().getString(R.string.url_gzip_city_archive));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.connect();
 
@@ -45,10 +57,6 @@ public class DownloadTask extends AsyncTask<String, Void, Void> {
                         +"); message ("+ connection.getResponseMessage() +")");
                 return null;
             }
-
-            String output_file_name =
-                    Environment.getExternalStorageDirectory().getPath()
-                    + "/city.list.us.json";
 
             InputStream stream = new GZIPInputStream(connection.getInputStream());
             InputSource source = new InputSource(stream);
